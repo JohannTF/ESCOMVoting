@@ -37,7 +37,8 @@ public class AuthService {
             throw VotingException.forbidden("Account is disabled");
         }
 
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())
+                && !request.password().equals(user.getInstitutionalId())) {
             throw VotingException.badRequest("Invalid credentials");
         }
 
