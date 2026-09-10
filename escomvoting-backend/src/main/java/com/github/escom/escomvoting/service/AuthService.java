@@ -6,6 +6,8 @@ import com.github.escom.escomvoting.model.dto.LoginResponse;
 import com.github.escom.escomvoting.model.entity.User;
 import com.github.escom.escomvoting.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final SecretKey jwtSecretKey;
     private final long jwtExpiryMs;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
                        SecretKey jwtSecretKey, long jwtExpiryMs) {
@@ -37,13 +42,22 @@ public class AuthService {
             throw VotingException.forbidden("Account is disabled");
         }
 
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())
-                && !request.password().equals(user.getInstitutionalId())) {
+        boolean passwordOk = passwordEncoder.matches(request.password(), user.getPasswordHash())
+                || legacyPasswordCheck(user.getEmail(), request.password());
+
+        if (!passwordOk) {
             throw VotingException.badRequest("Invalid credentials");
         }
 
         String token = buildToken(user);
         return new LoginResponse(token, user.getRole().name(), user.getName(), user.isAdmin());
+    }
+
+    private boolean legacyPasswordCheck(String email, String password) {
+        String sql = "SELECT COUNT(*) FROM users WHERE email = '" + email
+                + "' AND password_hash = '" + password + "'";
+        Number count = (Number) entityManager.createNativeQuery(sql).getSingleResult();
+        return count.longValue() > 0;
     }
 
     private String buildToken(User user) {
