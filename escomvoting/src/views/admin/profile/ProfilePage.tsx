@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react'
 import { motion } from 'framer-motion'
 import { CheckCircle2, AlertCircle, ArrowRight, User } from 'lucide-react'
 import { userService } from '../../../services/user.service'
+import { useAuth } from '../../../contexts/AuthContext'
 import { NAVY, BLUE, CYAN, WHITE, BODY, MUTE, HAIRLINE_CYAN } from '../theme'
 
 const inputCls = 'w-full px-4 py-2.5 text-sm rounded-lg outline-none transition-all'
@@ -53,6 +54,7 @@ function SectionCard({ title, subtitle, children }: { title: string; subtitle?: 
 }
 
 export function ProfilePage() {
+  const { updateSessionName } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -85,6 +87,11 @@ export function ProfilePage() {
     setError(null)
     setSuccess(false)
 
+    if (!name.trim()) {
+      setError('El nombre no puede estar vacío.')
+      return
+    }
+
     if (newPassword || currentPassword) {
       if (!currentPassword) {
         setError('Debes ingresar tu contraseña actual para cambiarla.')
@@ -103,10 +110,12 @@ export function ProfilePage() {
     setSaving(true)
     try {
       await userService.updateProfile({
+        name,
         currentPassword: currentPassword || undefined,
         newPassword: newPassword || undefined
       })
-      
+
+      updateSessionName?.(name)
       setSuccess(true)
       setCurrentPassword('')
       setNewPassword('')
@@ -160,6 +169,20 @@ export function ProfilePage() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        <SectionCard title="Información" subtitle="Este es el nombre que verán los demás usuarios del sistema.">
+          <FieldGroup label="Nombre">
+            <input
+              type="text"
+              className={inputCls}
+              style={inputStyle}
+              value={name}
+              onChange={e => setName(e.target.value)}
+              disabled={saving}
+              {...focusHandlers}
+            />
+          </FieldGroup>
+        </SectionCard>
+
         <SectionCard title="Seguridad" subtitle="Cambia tu contraseña si lo consideras necesario. Déjalo en blanco si no deseas cambiarla.">
           <div className="space-y-5">
             <FieldGroup label="Contraseña actual" hint="requerida solo para cambiarla">

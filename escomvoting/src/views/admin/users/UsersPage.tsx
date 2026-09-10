@@ -265,9 +265,11 @@ export function UsersPage() {
                       </span>
                     </td>
                     <td className="px-6 py-3.5">
-                      <span className="font-semibold" style={{ color: NAVY }}>
-                        {u.name}
-                      </span>
+                      <span
+                        className="font-semibold"
+                        style={{ color: NAVY }}
+                        dangerouslySetInnerHTML={{ __html: u.name }}
+                      />
                     </td>
                     <td
                       className="px-6 py-3.5 text-xs"

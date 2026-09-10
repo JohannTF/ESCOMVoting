@@ -115,6 +115,10 @@ public class UserService {
         User user = userRepository.findById(authenticatedUser.getId())
                 .orElseThrow(() -> VotingException.notFound("Usuario no encontrado"));
 
+        if (req.name() != null && !req.name().trim().isEmpty()) {
+            user.setName(req.name().trim());
+        }
+
         if (req.newPassword() != null && !req.newPassword().trim().isEmpty()) {
             if (req.currentPassword() == null || req.currentPassword().trim().isEmpty()) {
                 throw VotingException.badRequest("Debe proporcionar la contraseña actual");
@@ -123,6 +127,10 @@ public class UserService {
                 throw VotingException.badRequest("La contraseña actual es incorrecta");
             }
             user.setPasswordHash(passwordEncoder.encode(req.newPassword().trim()));
+        }
+
+        if (req.admin() != null) {
+            user.setAdmin(req.admin());
         }
 
         return UserDTO.from(userRepository.save(user));

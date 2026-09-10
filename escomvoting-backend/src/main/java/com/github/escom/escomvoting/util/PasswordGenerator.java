@@ -1,21 +1,21 @@
 package com.github.escom.escomvoting.util;
 
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Generates random temporary passwords for newly created accounts.
  *
- * Uses {@link SecureRandom} and guarantees at least one lowercase, one uppercase,
- * one digit and one symbol so the result satisfies common complexity policies.
- * Ambiguous characters (0/O, 1/l/I) are excluded so the password is easy to read
- * and re-type from a welcome email.
+ * Guarantees at least one lowercase, one uppercase, one digit and one symbol
+ * so the result satisfies common complexity policies. Ambiguous characters
+ * (0/O, 1/l/I) are excluded so the password is easy to read and re-type from
+ * a welcome email.
  */
 public final class PasswordGenerator {
 
-    private static final SecureRandom RNG = new SecureRandom();
+    private static final Random RNG = new Random();
 
     private static final String LOWER   = "abcdefghijkmnpqrstuvwxyz";
     private static final String UPPER   = "ABCDEFGHJKLMNPQRSTUVWXYZ";
